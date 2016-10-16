@@ -157,3 +157,114 @@ parameter_list:
   parameter_declaration
 | parameter_list COMMA parameter_declaration
 
+parameter_declaration:
+  declaration_specifiers declarator
+| declaration_specifiers abstract_declarator
+| declaration_specifiers
+
+identifier_list:
+  identifier
+| identifier_list COMMA identifier
+
+type_name:
+  specifier_qualifier_list abstract_declarator
+| specifier_qualifier_list
+
+abstract_declarator:
+  pointer
+| pointer direct_abstract_declarator
+| direct_abstract_declarator
+
+direct_abstract_declarator:
+  LPAREN abstract_declarator RPAREN
+| direct_abstract_declarator LBRACKET_SQUARE constant_expression RBRACKET_SQUARE
+| direct_abstract_declarator LBRACKET_SQUARE RBRACKET_SQUARE
+| LBRACKET_SQUARE constant_expression RBRACKET_SQUARE
+| LBRACKET_SQUARE RBRACKET_SQUARE
+| direct_abstract_declarator LPAREN parameter_type_list RPAREN
+| LPAREN parameter_type_list RPAREN
+| direct_abstract_declarator LPAREN RPAREN
+| LPAREN RPAREN
+
+typedef_name:
+  identifier
+
+statement:
+  labeled_statement
+| expression_statement
+| compound_statement
+| selection_statement
+| iteration_statement
+| jump_statement
+
+labeled_statement:
+ identifier COLON statement
+| CASE constant_expression COLON statement
+| DEFAULT COLON statement
+
+expression_statement:
+  expression SEMICOLON
+| SEMICOLON
+
+compound_statement:
+  LBRACKET declaration_list statement_list RBRACKET
+| LBRACKET declaration_list RBRACKET
+| LBRACKET statement_list RBRACKET
+| LBRACKET RBRACKET
+
+statement_list:
+  statement
+| statement_list statement
+
+selection_statement:
+  IF LPAREN expression RPAREN statement
+| IF LPAREN expression RPAREN statement ELSE statement
+| SWITCH LPAREN expression RPAREN statement
+
+iteration_statement:
+  WHILE LPAREN expression RPAREN statement
+| DO statement WHILE LPAREN expression RPAREN SEMICOLON
+| FOR LPAREN expression SEMICOLON expression SEMICOLON expression RPAREN
+statement
+| FOR LPAREN expression SEMICOLON expression SEMICOLON RPAREN statement
+| FOR LPAREN expression SEMICOLON SEMICOLON RPAREN statement
+| FOR LPAREN expression SEMICOLON SEMICOLON expression RPAREN statement
+| FOR LPAREN SEMICOLON expression SEMICOLON RPAREN statement
+| FOR LPAREN SEMICOLON SEMICOLON expression RPAREN statement
+| FOR LPAREN SEMICOLON expression SEMICOLON expression RPAREN statement
+| FOR LPAREN SEMICOLON SEMICOLON RPAREN statement
+
+jump_statement:
+  GOTO identifier SEMICOLON
+| CONTINUE SEMICOLON
+| BREAK SEMICOLON
+| RETURN expression
+| RETURN
+
+expression:
+  assignment_expression
+| expression COMMA assignment_expression
+
+assignment_expression:
+  conditional_expression
+| unary_expression assignment_operator assignment_expression
+
+assignment_operator:
+  ASSIGN
+| ASSIGN_AND_MULTIPLY
+| ASSIGN_AND_DIVIDE
+| ASSIGN_MODULO
+| ASSIGN_AND_PLUS
+| ASSIGN_AND_MINUS
+| ASSIGN_AND_LSHIFT
+| ASSIGN_AND_RSHIFT
+| ASSIGN_AND_EQUALS
+| ASSIGN_BITWISE_EXCLUSIVE_OR
+| ASSIGN_BITWISE_INCLUSIVE_OR
+
+conditional_expression:
+  logical_OR_expression
+| logical_OR_expression QUESTION expression COLON conditional_expression
+
+constant_expression:
+  conditional_expression
