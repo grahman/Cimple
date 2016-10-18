@@ -268,3 +268,96 @@ conditional_expression:
 
 constant_expression:
   conditional_expression
+
+logical_OR_expression:
+    logical_AND_expression
+  | logical_OR_expression LOGICAL_OR logical_AND_expression
+
+logical_AND_expression:
+    inclusive_OR_expression
+  | logical_AND_expression LOGICAL_AND inclusive_OR_expression
+
+inclusive_OR_expression:
+    exclusive_OR_expression
+  | inclusive_OR_expression OR exclusive_OR_expression
+
+exclusive_OR_expression:
+    AND_expression
+  | exclusive_OR_expression BITWISE_EXCLUSIVE_OR AND_expression
+
+AND_expression:
+    equality_expression
+  | AND_expression AND equality_expression
+
+equality_expression:
+    relational_expression
+  | equality_expression EQUALS relational_expression
+  | equality_expression NOT_EQUALS relational_expression
+
+relational_expression:
+    shift_expression
+  | relational_expression LESS_THAN shift_expression
+  | relational_expression GREATER_THAN shift_expression
+  | relational_expression LESS_EQUAL shift_expression
+  | relational_expression GREATER_EQUAL shift_expression
+
+shift_expression:
+    additive_expression
+  | shift_expression LSHIFT additive_expression
+  | shift_expression RSHIFT additive_expression
+
+additive_expression:
+    multiplicative_expression
+  | additive_expression PLUS multiplicative_expression
+  | additive_expression MINUS multiplicative_expression
+
+multiplicative_expression:
+    cast_expression
+  | multiplicative_expression TIMES cast_expression
+  | multiplicative_expression DIVIDE cast_expression
+  | multiplicative_expression MODULO cast_expression
+
+cast_expression:
+    unary_expression
+  | LPAREN type_name RPAREN cast_expression
+
+unary_expression:
+    postfix_expression
+  | INCREMENT unary_expression
+  | DECREMENT unary_expression
+  | unary_operator cast_expression
+  | sizeof unary_expression
+  | sizeof LPAREN type_name RPAREN
+
+unary_operator:
+    BITWISE_AND
+  | TIMES
+  | PLUS
+  | MINUS
+  | BITWISE_NOT
+  | LOGICAL_NOT
+
+postfix_expression:
+    primary_expression
+  | postfix_expression LBRACKET_SQUARE expression RBRACKET_SQUARE
+  | postfix_expression LPAREN argument_expression_list RPAREN
+  | postfix_expression DOT identifier
+  | postfix_expression DEREFERENCE identifier
+  | postfix_expression INCREMENT
+  | postfix_expression DECREMENT
+
+primary_expression:
+    identifier
+  | constant_expression
+  | string
+  | LPAREN expression RPAREN
+
+argument_expression_list:
+    assignment_expression
+  | argument_expression_list COMMA assignment_expression
+  
+constant:
+    integer_constant
+  | character_constant
+  | floating_constant
+  | enumeration_constant

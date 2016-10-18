@@ -1,11 +1,29 @@
+(* XOR EQUALS NOTEQUALS LESS_THAN GREATER_THAN LESS_EQUAL
+ GREATER_EQUAL LSHIFT RSHIFT MODULO AND NEGATE NOT DOT DEREFERENCE INCREMENT DECREMENT *)
+
 { open Parser }
 
 rule token = parse
   [' ' '\t' '\r' '\n'] { token lexbuf }
+| "++" { INCREMENT }
+| "--" { DECREMENT }
+| '.' { DOT }
+| "->" { DEREFERENCE }
+| '!' { LOGICAL_NOT }
+| '~' { BITWISE_NOT }
 | '+' { PLUS }
 | '-' { MINUS }
+| '%' { MODULUS }
 | '*' { TIMES }
 | '/' { DIVIDE }
+| "<<" { LSHIFT }
+| ">>" { RSHIFT }
+| '<' { LESS_THAN }
+| "<=" { LESS_EQUAL }
+| '>' { GREATER_THAN }
+| ">=" { GREATER_EQUAL }
+| "==" { EQUALS }
+| "!=" { NOT_EQUALS }
 | '|' { BITWISE_INCLUSIVE_OR }
 | '^' { BITWISE_EXCLUSIVE_OR }
 | '&' { BITWISE_AND }
