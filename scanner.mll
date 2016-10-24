@@ -6,11 +6,6 @@ rule token = parse
 | '-' { MINUS }
 | '*' { TIMES }
 | '/' { DIVIDE }
-| '|' { BITWISE_INCLUSIVE_OR }
-| '^' { BITWISE_EXCLUSIVE_OR }
-| '&' { BITWISE_AND }
-| "||" { LOGICAL_OR }
-| "&&" { LOGICAL_AND }
 | ['0'-'9']+ as lit { LITERAL(int_of_string lit) }
 | "auto" { AUTO }
 | "register" { REGISTER }
@@ -51,16 +46,6 @@ rule token = parse
 | ')' { RPAREN }
 | ',' { COMMA }
 | '=' { ASSIGN }
-| "*=" { ASSIGN_AND_MULTIPLY }
-| "/=" { ASSIGN_AND_DIVIDE }
-| "%=" { ASSIGN_MODULO }
-| "+=" { ASSIGN_AND_PLUS }
-| "-=" { ASSIGN_AND_MINUS }
-| "<<=" { ASSIGN_AND_LSHIFT }
-| ">>=" { ASSIGN_AND RIGHT_SHIFT }
-| "&=" { ASSIGN_AND_EQUALS }
-| "^=" { ASSIGN_BITWISE_EXCLUSIVE_OR }
-| "|=" { ASSIGN_BITWISE_INCLUSIVE_OR }
 | ';' { SEMICOLON }
 | '?' { QUESTION }
 | ':' { COLON }

@@ -1,6 +1,7 @@
 %{ open Ast %}
 
 %token ASSIGN
+%token RETURN
 %token PLUS MINUS TIMES DIVIDE EOF
 %token <int> LITERAL
 %token SEMICOLON
@@ -8,263 +9,42 @@
 %token VOID CHAR SHORT INT LONG FLOAT DOUBLE SIGNED UNSIGNED
 %token CONST VOLATILE
 %token STRUCT UNION
-%token ENUM
-%token LBRACKET RBRACKET LBRACKET_SQUARE RBRACKET_SQUARE LPAREN RPAREN COMMA COLON ELLIPSIS
+%token SWITCH CASE ENUM DEFAULT IF ELSE
+%token LBRACKET RBRACKET LBRACKET_SQUARE RBRACKET_SQUARE LPAREN RPAREN COMMA
+COLON ELLIPSIS ASTERISK
+%token WHILE DO FOR GOTO CONTINUE BREAK
+%token QUESTION
 
-%left PLUS MINUS
-%left TIMES DIVIDE
-
-%start translation_unit
-%type < Ast.expr> expr
+%start statement
+%type <Ast.statement> statement
 
 %%
 
-translation_unit:
-  external_declaration
-| translation_unit external_declaration
-
-external_declaration:
-  function_definition
-| declaration
-
-function_definition:
-  declarator compound_statement
-| declarator declaration_list compound_statement
-| declaration_specifiers declarator compound_statement
-| declaration_specifiers declarator declaration_list compound_statement
-
-declaration:
-  declaration_specifiers SEMICOLON
-| declaration_specifiers init_declarator_list SEMICOLON
-
-declaration_list:
-  declaration
-| declaration_list declaration
-
-declaration_specifiers:
-  storage_class_specifier
-| storage_class_specifier declaration_specifiers
-| type_specifier
-| type_specifier declaration_specifiers
-| type_qualifier
-| type_qualifier declaration_specifiers
-
-storage_class_specifier:
-  AUTO
-| REGISTER
-| STATIC
-| EXTERN
-| TYPEDEF
-
-type_specifier:
-  VOID
-| CHAR
-| SHORT
-| INT
-| LONG
-| FLOAT
-| DOUBLE
-| SIGNED
-| UNSIGNED
-| struct_or_union_specifier
-| enum_specifier
-| typedef_name
-
-type_qualifier:
-  CONST
-| VOLATILE
-
-struct_or_union_specifier:
-  struct_or_union LBRACKET struct_declaration_list RBRACKET
-| struct_or_union identifier LBRACKET struct_declaration_list RBRACKET
-| struct_or_union identifier
-
-struct_or_union:
-  STRUCT
-| UNION
-
-struct_declaration_list:
-  struct_declaration
-| struct_declaration_list struct_declaration
-
-init_declarator_list:
-  init_declarator
-| init_declarator_list COMMA init_declarator
-
-init_declarator:
-  declarator
-| declarator ASSIGN initializer_
-
-struct_declaration:
-  specifier_qualifier_list struct_declarator_list SEMICOLON
-
-specifier_qualifier_list:
-  type_specifier
-| type_specifier specifier_qualifier_list
-| type_qualifier
-| type_qualifier specifier_qualifier_list
-
-struct_declarator_list:
-  struct_declarator
-| struct_declarator_list COMMA struct_declarator
-
-struct_declarator:
-  declarator
-| COLON constant_expression
-| declarator COLON constant_expression
-
-enum_specifier:
-  ENUM LBRACKET enumerator_list RBRACKET
-| ENUM identifier LBRACKET enumerator_list RBRACKET
-| ENUM identifier
-
-enumerator_list:
-  enumerator
-| enumerator_list COMMA enumerator
-
-enumerator:
-  identifier
-| identifier ASSIGN constant_expression
-
-declarator:
-  direct_declarator
-| pointer direct_declarator
-
-direct_declarator:
-  identifier
-| LPAREN declarator RPAREN
-| direct_declarator LBRACKET_SQUARE RBRACKET_SQUARE
-| direct_declarator LBRACKET_SQUARE constant_expression RBRACKET_SQUARE
-| direct_declarator LPAREN parameter_type_list RPAREN
-| direct_declarator LPAREN RPAREN
-| direct_declarator LPAREN identifier_list RPAREN
-
-pointer:
-  ASTERISK
-| ASTERISK type_qualifier_list
-| ASTERISK pointer
-| ASTERISK type_qualifier_list pointer
-
-type_qualifier_list:
-  type_qualifier
-| type_qualifier_list type_qualifier
-
-parameter_type_list:
-  parameter_list
-| parameter_list COMMA ELLIPSIS
-
-parameter_list:
-  parameter_declaration
-| parameter_list COMMA parameter_declaration
-
-parameter_declaration:
-  declaration_specifiers declarator
-| declaration_specifiers abstract_declarator
-| declaration_specifiers
-
-identifier_list:
-  identifier
-| identifier_list COMMA identifier
-
-type_name:
-  specifier_qualifier_list abstract_declarator
-| specifier_qualifier_list
-
-abstract_declarator:
-  pointer
-| pointer direct_abstract_declarator
-| direct_abstract_declarator
-
-direct_abstract_declarator:
-  LPAREN abstract_declarator RPAREN
-| direct_abstract_declarator LBRACKET_SQUARE constant_expression RBRACKET_SQUARE
-| direct_abstract_declarator LBRACKET_SQUARE RBRACKET_SQUARE
-| LBRACKET_SQUARE constant_expression RBRACKET_SQUARE
-| LBRACKET_SQUARE RBRACKET_SQUARE
-| direct_abstract_declarator LPAREN parameter_type_list RPAREN
-| LPAREN parameter_type_list RPAREN
-| direct_abstract_declarator LPAREN RPAREN
-| LPAREN RPAREN
-
-typedef_name:
-  identifier
+statement_list:
+  /* nothing */ { [] }
+  | statement_list statement { $2 :: $1 }      
 
 statement:
-  labeled_statement
-| expression_statement
-| compound_statement
-| selection_statement
-| iteration_statement
-| jump_statement
+  expr_opt SEMICOLON { Expr $1 }
+  | RETURN SEMICOLON { Return Noexpr }
 
-labeled_statement:
- identifier COLON statement
-| CASE constant_expression COLON statement
-| DEFAULT COLON statement
+expr_opt:
+  /* Nothing */ {Noexpr}
+  | expr          { $1 }
 
-expression_statement:
-  expression SEMICOLON
-| SEMICOLON
+expr:
+  add_expr  { $1 } 
 
-compound_statement:
-  LBRACKET declaration_list statement_list RBRACKET
-| LBRACKET declaration_list RBRACKET
-| LBRACKET statement_list RBRACKET
-| LBRACKET RBRACKET
+add_expr:
+  add_expr PLUS mult_expr { Binop($1, Add, $3) }
+  | add_expr MINUS mult_expr { Binop($1, Sub, $3) }
+  | mult_expr  { $1 }
 
-statement_list:
-  statement
-| statement_list statement
+mult_expr:
+    mult_expr TIMES LITERAL { Binop($1, Mul, Literal($3)) }
+  | mult_expr DIVIDE LITERAL { Binop($1, Div, Literal($3)) }
+  | primary_expr             { $1 }
+  | LITERAL                  { Literal($1) }
 
-selection_statement:
-  IF LPAREN expression RPAREN statement
-| IF LPAREN expression RPAREN statement ELSE statement
-| SWITCH LPAREN expression RPAREN statement
-
-iteration_statement:
-  WHILE LPAREN expression RPAREN statement
-| DO statement WHILE LPAREN expression RPAREN SEMICOLON
-| FOR LPAREN expression SEMICOLON expression SEMICOLON expression RPAREN
-statement
-| FOR LPAREN expression SEMICOLON expression SEMICOLON RPAREN statement
-| FOR LPAREN expression SEMICOLON SEMICOLON RPAREN statement
-| FOR LPAREN expression SEMICOLON SEMICOLON expression RPAREN statement
-| FOR LPAREN SEMICOLON expression SEMICOLON RPAREN statement
-| FOR LPAREN SEMICOLON SEMICOLON expression RPAREN statement
-| FOR LPAREN SEMICOLON expression SEMICOLON expression RPAREN statement
-| FOR LPAREN SEMICOLON SEMICOLON RPAREN statement
-
-jump_statement:
-  GOTO identifier SEMICOLON
-| CONTINUE SEMICOLON
-| BREAK SEMICOLON
-| RETURN expression
-| RETURN
-
-expression:
-  assignment_expression
-| expression COMMA assignment_expression
-
-assignment_expression:
-  conditional_expression
-| unary_expression assignment_operator assignment_expression
-
-assignment_operator:
-  ASSIGN
-| ASSIGN_AND_MULTIPLY
-| ASSIGN_AND_DIVIDE
-| ASSIGN_MODULO
-| ASSIGN_AND_PLUS
-| ASSIGN_AND_MINUS
-| ASSIGN_AND_LSHIFT
-| ASSIGN_AND_RSHIFT
-| ASSIGN_AND_EQUALS
-| ASSIGN_BITWISE_EXCLUSIVE_OR
-| ASSIGN_BITWISE_INCLUSIVE_OR
-
-conditional_expression:
-  logical_OR_expression
-| logical_OR_expression QUESTION expression COLON conditional_expression
-
-constant_expression:
-  conditional_expression
+primary_expr:
+  LPAREN expr RPAREN         { $2 }
